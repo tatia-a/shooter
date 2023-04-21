@@ -36,7 +36,8 @@ public class PlayerAttack : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit))
         {
-            if (hit.transform.tag == "Aim")
+            var aim = hit.transform.GetComponent<Aim>();
+            if (aim != null)
             {
                 hit.transform.GetComponent<Aim>().TakeDamage(damage);
             }
