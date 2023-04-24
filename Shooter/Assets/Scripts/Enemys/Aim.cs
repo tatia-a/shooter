@@ -27,9 +27,10 @@ public class Aim : MonoBehaviour
     {
         if (hp <= 0)
         {
-            Instantiate(deadEffect, transform.position, transform.rotation);
+            var deathEffectGO = Instantiate(deadEffect, transform.position, transform.rotation);
 
             Destroy(gameObject);
+            Destroy(deathEffectGO, 2f);
             
         }
     }

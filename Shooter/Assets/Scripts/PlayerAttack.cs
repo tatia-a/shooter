@@ -11,6 +11,8 @@ public class PlayerAttack : MonoBehaviour
     public Camera cam;
 
     public AudioSource shootSound;
+    public ParticleSystem flashOnFire;
+    public GameObject impactEffect;
 
 
     // Start is called before the first frame update
@@ -22,7 +24,7 @@ public class PlayerAttack : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetButtonDown("Fire1"))
+        if(Input.GetButtonDown("Fire1") && !PauseManager.instance.GetPauseState())
         {
             Shoot();
         }
@@ -32,6 +34,7 @@ public class PlayerAttack : MonoBehaviour
     private void Shoot()
     {
         shootSound.Play();
+        flashOnFire.Play();
 
         RaycastHit hit;
         if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit))
@@ -41,6 +44,9 @@ public class PlayerAttack : MonoBehaviour
             {
                 hit.transform.GetComponent<Aim>().TakeDamage(damage);
             }
+
+            var impactGO = Instantiate(impactEffect, hit.point, Quaternion.LookRotation(hit.normal));
+            Destroy(impactGO, 2f);
         }
     }
 }

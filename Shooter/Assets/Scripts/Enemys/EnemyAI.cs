@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class Enemy : MonoBehaviour
+public class EnemyAI : MonoBehaviour
 {
     public NavMeshAgent agent;
     public Transform player;
@@ -41,7 +41,6 @@ public class Enemy : MonoBehaviour
 
     }
 
-    
     private void Paroling()
     {
         if (!walkPointSet) SearchWalkPoint();
@@ -79,11 +78,15 @@ public class Enemy : MonoBehaviour
 
         if(!alreadyAttacked)
         {
-            // Код атаки
+            AttackSequence();
 
             alreadyAttacked = true;
             Invoke(nameof(ResetAttack), timeBetweenAttaks);
         }
+    }
+    protected void AttackSequence()
+    {
+        // уникальное для каждого
     }
 
     private void ResetAttack()
