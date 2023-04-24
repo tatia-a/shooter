@@ -5,36 +5,41 @@ using UnityEngine;
 
 public class PlayerAttack : MonoBehaviour
 {
-    public float damage = 5f;
-    public float range = 100f;
+    [SerializeField] private WeaponSwitcher weaponSwitcher;
 
-    public Camera cam;
+    [SerializeField] private AudioSource shootSound;
+    [SerializeField] private GameObject impactEffect;
 
-    public AudioSource shootSound;
-    public ParticleSystem flashOnFire;
-    public GameObject impactEffect;
+    private float timer = 0;
 
+    private Camera cam;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
-        
+        cam = Camera.main;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetButtonDown("Fire1") && !PauseManager.instance.GetPauseState())
+        timer -= Time.deltaTime;
+        if (timer <= 0)
         {
-            Shoot();
+            if(Input.GetButtonDown("Fire1") && !PauseManager.instance.GetPauseState())
+            {
+                Shoot();
+                timer = weaponSwitcher.SelectedWeapon.Cooldown;
+            }
         }
+        
         
     }
 
     private void Shoot()
     {
+        Weapon selectedWeapon = weaponSwitcher.SelectedWeapon;
         shootSound.Play();
-        flashOnFire.Play();
+        selectedWeapon.MakeShootEffect();
 
         RaycastHit hit;
         if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit))
@@ -42,7 +47,8 @@ public class PlayerAttack : MonoBehaviour
             var aim = hit.transform.GetComponent<Aim>();
             if (aim != null)
             {
-                hit.transform.GetComponent<Aim>().TakeDamage(damage);
+                print(selectedWeapon.Damage);
+                hit.transform.GetComponent<Aim>().TakeDamage(selectedWeapon.Damage);
             }
 
             var impactGO = Instantiate(impactEffect, hit.point, Quaternion.LookRotation(hit.normal));
