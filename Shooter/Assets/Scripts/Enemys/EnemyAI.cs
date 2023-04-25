@@ -4,28 +4,36 @@ using UnityEngine.AI;
 
 public class EnemyAI : MonoBehaviour
 {
-    public NavMeshAgent agent;
-    public Transform player;
+    private NavMeshAgent agent;
+    private Transform player;
 
-    public LayerMask whatIsGroung, whatIsPlayer;
+    [SerializeField] public LayerMask whatIsGroung, whatIsPlayer;
 
     // патруль
-    public Vector3 walkPoint;
-    bool walkPointSet;
-    public float walkPointRange;
+    private Vector3 walkPoint; // случайная точка
+    private bool walkPointSet; // true - если случайная точка установлена
+    [SerializeField] private float walkPointRange;
 
     // атака
-    public float timeBetweenAttaks;
-    bool alreadyAttacked;
+    [SerializeField] private float timeBetweenAttaks;
+    private bool alreadyAttacked;
 
     // состояния
-    public float sightRange, attackRange;
-    public bool playerInSightRange, playerInAttackRange;
+    [SerializeField] private float sightRange, attackRange;
+    private bool playerInSightRange, playerInAttackRange;
+
+    // анимации
+    [SerializeField] private Animator animator;
+
+    // Коллайдер для нанесения урона
+    [SerializeField] private AttackZone attackZone;
 
     private void Awake()
     {
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Transform>();
         agent = GetComponent<NavMeshAgent>();
+
+        SearchWalkPoint();
     }
 
     // Update is called once per frame
@@ -35,7 +43,7 @@ public class EnemyAI : MonoBehaviour
         playerInAttackRange = Physics.CheckSphere(transform.position, attackRange, whatIsPlayer);
 
         if (!playerInSightRange && !playerInAttackRange) Paroling();
-        if (!playerInSightRange && playerInAttackRange) ChasePlayer();
+        if (playerInSightRange && !playerInAttackRange) ChasePlayer();
         if (playerInSightRange && playerInAttackRange) AttackPlayer();
 
 
@@ -43,14 +51,20 @@ public class EnemyAI : MonoBehaviour
 
     private void Paroling()
     {
-        if (!walkPointSet) SearchWalkPoint();
+        if (!walkPointSet)
+        {
+            animator.SetTrigger("isIdle");
+            SearchWalkPoint();
+        }
 
         if (walkPointSet)
+        {
+            animator.SetTrigger("isRun");
             agent.SetDestination(walkPoint);
-
+        }
         Vector3 distanseToWalkPoint = transform.position - walkPoint;
 
-        if(distanseToWalkPoint.magnitude < 1f)
+        if (distanseToWalkPoint.magnitude < 1f)
             walkPointSet = false;
     }
 
@@ -59,7 +73,7 @@ public class EnemyAI : MonoBehaviour
         float randomZ = UnityEngine.Random.Range(-walkPointRange, walkPointRange);
         float randomX = UnityEngine.Random.Range(-walkPointRange, walkPointRange);
 
-        walkPoint = new Vector3(randomX, transform.position.y, randomZ);
+        walkPoint = new Vector3(transform.position.x + randomX, transform.position.y, transform.position.y + randomZ);
 
         if (Physics.Raycast(walkPoint, -transform.up, 10f, whatIsGroung))
             walkPointSet = true;
@@ -76,7 +90,7 @@ public class EnemyAI : MonoBehaviour
 
         transform.LookAt(player);
 
-        if(!alreadyAttacked)
+        if (!alreadyAttacked)
         {
             AttackSequence();
 
@@ -86,7 +100,14 @@ public class EnemyAI : MonoBehaviour
     }
     protected void AttackSequence()
     {
-        // уникальное для каждого
+        animator.SetTrigger("isAttack");
+
+        // нанести урон с шансом 75
+        var chance = UnityEngine.Random.RandomRange(0f, 100f) > 25;
+
+        if (attackZone.PlayerInZone && chance)
+            player.GetComponent<PlayerHealth>().TakeDamage(5f);
+
     }
 
     private void ResetAttack()
