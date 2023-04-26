@@ -28,7 +28,7 @@ public class Aim : MonoBehaviour
         if (hp <= 0)
         {
             var deathEffectGO = Instantiate(deadEffect, transform.position, transform.rotation);
-
+            EnemyCounter.Instance.CountKill();
             Destroy(gameObject);
             Destroy(deathEffectGO, 2f);
             
