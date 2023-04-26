@@ -8,6 +8,7 @@ public class FlagCounter : MonoBehaviour
     private int reachedFlags;
 
     public int ReachedFlags { get => reachedFlags; }
+    public int QuantityFlags { get => quantityFlags; }
 
     // синглтон
     public static FlagCounter Instance;
